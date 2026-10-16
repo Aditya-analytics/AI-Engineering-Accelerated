@@ -7,3 +7,11 @@
 - Mistakes / misconceptions: In Python max task, extracted just the value `92` rather than the dictionary item `{'id': 2, 'score': 92}`; introduced `key=lambda` idiom. In Git, noted that `mentor/` should not be ignored if tracking progress.
 - Interview Q practiced + how I did: Diagnostic tasks executed with working code.
 - Next: Unit 1.1: What an LLM Does.
+
+### 2026-10-17 · Day 1 · Unit 1.1 (planned: Day 1)
+- Covered: What an LLM Does, next-token prediction, sampling vs greedy decoding, token probability distributions.
+- Did myself (hint level max): L2 (wrote API script, resolved .env path, fixed 401 auth header and 402 token quota errors).
+- Gate: score 3.75/5 · needs-review · confidence not stated by learner across questions.
+- Mistakes / misconceptions: Confused internal transformer output logits/softmax with vector similarity search; suggested prompt fallback instead of tool/function calling for stateful backend actions.
+- Interview Q practiced + how I did: Answered company policy hallucination question with high-level RAG/prompting concepts; critiqued and upgraded to senior articulation.
+- Next: Retest Unit 1.1 weak spots, then proceed to Unit 1.2 (Tokens, Context and Latency).

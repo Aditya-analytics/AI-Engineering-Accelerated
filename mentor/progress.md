@@ -25,7 +25,7 @@ STATUS: ACTIVE
 Status values: not-started / learning / needs-review / mastered / deferred
 | Unit | Title | Day | Try-it done | Gate | Status |
 |------|-------|-----|-------------|------|--------|
-| 1.1 | What an LLM Does | 1 | no | - | not-started |
+| 1.1 | What an LLM Does | 1 | yes | 3.75/5 | needs-review |
 | 1.2 | Tokens, Context and Latency | 2 | no | - | not-started |
 | 1.3 | Beyond Text: Images, Audio and PDFs | 3 | no | - | not-started |
 | 1.4 | Controlling Output | 4 | no | - | not-started |
@@ -33,10 +33,11 @@ Status values: not-started / learning / needs-review / mastered / deferred
 | 1.6 | Choosing a Model | 6 | no | - | not-started |
 
 ## Weak spots (add with evidence, remove when resolved)
-- none yet
+- Transformer output generation: confused Softmax over vocabulary logits with vector similarity search (Unit 1.1).
+- Execution boundary: assumed prompt fallback instead of tool/function calling for stateful backend actions (Unit 1.1).
 
 ## Review queue (spaced repetition)
-- none yet
+- Unit 1.1: Logits/Softmax vocabulary distribution & Tool calling vs prompting distinction.
 
 ## Portfolio
 - Projects chosen: none · Milestones: none · Repos: none
@@ -45,7 +46,8 @@ Status values: not-started / learning / needs-review / mastered / deferred
 - Questions practiced: 0 / 100 · Mock interviews: 0 · Strong areas: - · Weak areas: -
 
 ## Mentor's honest assessment
-- Solid practical execution on Python and Git diagnostics. Shows bias for action by directly writing test scripts and pushing to GitHub. Ready to dive into Module 1.
+- Solid debugging persistence (resolved .env path, auth headers, and quota errors independently). Understands core concept of probabilistic next-token generation. Needs sharper articulation on logits/softmax and tool-calling boundaries.
 
 ## Next session plan
-- Begin Unit 1.1: What an LLM Does (mental model, next-token prediction, try-it exercise, gate quiz).
+- 2-minute warm-up retest on Unit 1.1 weak spots (logits/softmax and tool calling).
+- Move into Unit 1.2: Tokens, Context and Latency (token estimation, Hindi/code multipliers, context vs memory).
