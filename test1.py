@@ -3,7 +3,7 @@ class GetMaxScore:
         self.records = record
     
     def get_highest_score(self):
-        return max([scores['score'] for scores in self.records])
+        return max(self.records,key=lambda x:x['score'])
     
 
 test = GetMaxScore([{'id': 1, 'score': 85}, {'id': 2, 'score': 92}, {'id': 3, 'score': 78}])

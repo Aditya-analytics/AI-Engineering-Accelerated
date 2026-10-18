@@ -15,3 +15,12 @@
 - Mistakes / misconceptions: Confused internal transformer output logits/softmax with vector similarity search; suggested prompt fallback instead of tool/function calling for stateful backend actions.
 - Interview Q practiced + how I did: Answered company policy hallucination question with high-level RAG/prompting concepts; critiqued and upgraded to senior articulation.
 - Next: Retest Unit 1.1 weak spots, then proceed to Unit 1.2 (Tokens, Context and Latency).
+
+### 2026-10-18 · Day 2 · Unit 1.1 Review (planned: Day 2)
+- Covered: Clarified transformer LM head architecture: final hidden state projection via matrix multiplication into vocabulary logits, followed by Softmax probability distribution (contrasted with vector database search).
+- Did myself (hint level max): L1 (Identified need for architectural depth and mental model reset).
+- Gate: Unit 1.1 retest deferred · status remains needs-review.
+- Mistakes / misconceptions: Clarified confusion around decoding step vs vector search.
+- Interview Q practiced + how I did: None (short session focused on architectural mental model).
+- Next: Complete 3-question warm-up (logits/softmax check, tool-calling distinction), then start Unit 1.2 (Tokens, Context and Latency).
+

@@ -2,10 +2,10 @@
 STATUS: ACTIVE
 
 ## Current position
-- Today's actual Day: 1 · Planned Day: 1
-- Module: 1 · Unit: 1.1
-- Start date: 2026-10-16 · Last session: 2026-10-16
-- Streak: 1 day
+- Today's actual Day: 2 · Planned Day: 2
+- Module: 1 · Unit: 1.1 (needs-review) -> 1.2
+- Start date: 2026-10-16 · Last session: 2026-10-18
+- Streak: 3 days
 
 ## Overall
 - Units mastered: 0 / 86
@@ -46,8 +46,8 @@ Status values: not-started / learning / needs-review / mastered / deferred
 - Questions practiced: 0 / 100 · Mock interviews: 0 · Strong areas: - · Weak areas: -
 
 ## Mentor's honest assessment
-- Solid debugging persistence (resolved .env path, auth headers, and quota errors independently). Understands core concept of probabilistic next-token generation. Needs sharper articulation on logits/softmax and tool-calling boundaries.
+- Good callout on demanding architectural precision rather than glossing over it. Grounded the LM head projection, logits vector, and Softmax mechanics. Ready to re-test quickly and transition to Unit 1.2.
 
 ## Next session plan
-- 2-minute warm-up retest on Unit 1.1 weak spots (logits/softmax and tool calling).
+- 3-question warm-up retest on Unit 1.1 weak spots (logits/softmax and tool calling).
 - Move into Unit 1.2: Tokens, Context and Latency (token estimation, Hindi/code multipliers, context vs memory).
