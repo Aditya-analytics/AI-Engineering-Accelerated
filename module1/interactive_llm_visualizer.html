@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Interactive LLM Architecture & Inference Visualizer</title>
+  <meta name="description" content="Interactive step-by-step simulator showing how an autoregressive LLM generates text: Embeddings, LM Head Matrix Multiplication, Logits, Softmax, and Temperature sampling.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: rgba(18, 26, 44, 0.7);
+      --card-border: rgba(99, 102, 241, 0.2);
+      --card-border-glow: rgba(99, 102, 241, 0.4);
+      --accent: #6366f1;
+      --accent-glow: #818cf8;
+      --cyan: #06b6d4;
+      --emerald: #10b981;
+      --amber: #f59e0b;
+      --rose: #f43f5e;
+      --text: #f1f5f9;
+      --text-muted: #94a3b8;
+      --font-ui: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+      --font-mono: 'Fira Code', monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: radial-gradient(circle at 50% 0%, #151b32 0%, var(--bg) 80%);
+      color: var(--text);
+      font-family: var(--font-ui);
+      min-height: 100vh;
+      padding: 24px;
+      line-height: 1.5;
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+    }
+
+    header {
+      margin-bottom: 28px;
+      text-align: center;
+      position: relative;
+    }
+
+    .badge-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.35);
+      color: var(--accent-glow);
+      font-size: 0.8rem;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 9999px;
+      margin-bottom: 12px;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      font-size: 2.5rem;
+      font-weight: 800;
+      background: linear-gradient(135deg, #fff 30%, #818cf8 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    p.subtitle {
+      color: var(--text-muted);
+      font-size: 1.05rem;
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .layout-grid {
+      display: grid;
+      grid-template-columns: 1.15fr 0.85fr;
+      gap: 24px;
+    }
+
+    @media (max-width: 1080px) {
+      .layout-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 24px;
+      backdrop-filter: blur(16px);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+      transition: border-color 0.3s;
+    }
+
+    .card:hover {
+      border-color: var(--card-border-glow);
+    }
+
+    .card-title {
+      font-size: 1.2rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      color: #fff;
+    }
+
+    .card-title .icon {
+      width: 28px;
+      height: 28px;
+      border-radius: 8px;
+      display: grid;
+      place-items: center;
+      background: rgba(99, 102, 241, 0.2);
+      color: var(--accent-glow);
+      font-size: 0.9rem;
+    }
+
+    /* Controls Panel */
+    .controls-grid {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+
+    .input-group label {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .preset-buttons {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .btn-preset {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      color: #cbd5e1;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-preset:hover {
+      background: rgba(99, 102, 241, 0.2);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    .interactive-input {
+      display: flex;
+      gap: 10px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      background: rgba(0, 0, 0, 0.4);
+      border: 1px solid rgba(255, 255, 255, 0.15);
+      padding: 12px 16px;
+      border-radius: 10px;
+      color: #fff;
+      font-family: var(--font-mono);
+      font-size: 1rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent-glow);
+      box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2);
+    }
+
+    .slider-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      background: rgba(0, 0, 0, 0.25);
+      padding: 14px 18px;
+      border-radius: 12px;
+      margin-bottom: 20px;
+    }
+
+    .slider-container label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .slider-val {
+      color: var(--cyan);
+      font-family: var(--font-mono);
+    }
+
+    input[type="range"] {
+      width: 100%;
+      accent-color: var(--accent);
+      cursor: pointer;
+    }
+
+    .action-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .btn {
+      padding: 12px 22px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      border: none;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+      color: #fff;
+      box-shadow: 0 4px 14px rgba(79, 70, 229, 0.4);
+    }
+
+    .btn-primary:hover {
+      box-shadow: 0 6px 20px rgba(79, 70, 229, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: #fff;
+      border: 1px solid rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      color: var(--text-muted);
+    }
+
+    .btn-outline:hover {
+      color: #fff;
+      border-color: #fff;
+    }
+
+    /* Output Stream Section */
+    .stream-box {
+      background: rgba(5, 8, 15, 0.8);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 16px 20px;
+      min-height: 80px;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 24px;
+    }
+
+    .token-chip {
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      animation: chipPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    @keyframes chipPop {
+      0% { transform: scale(0.7); opacity: 0; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    .token-chip.prompt {
+      background: rgba(99, 102, 241, 0.15);
+      border: 1px solid rgba(99, 102, 241, 0.4);
+      color: #c7d2fe;
+    }
+
+    .token-chip.generated {
+      background: rgba(16, 185, 129, 0.2);
+      border: 1px solid rgba(16, 185, 129, 0.5);
+      color: #6ee7b7;
+      font-weight: 600;
+    }
+
+    .token-chip.latest {
+      box-shadow: 0 0 12px rgba(16, 185, 129, 0.5);
+      border-color: #34d399;
+    }
+
+    .token-id-tag {
+      font-size: 0.7rem;
+      opacity: 0.6;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 1px 4px;
+      border-radius: 4px;
+    }
+
+    /* Distribution Bars */
+    .distribution-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 14px;
+    }
+
+    .dist-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 140px;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.88rem;
+    }
+
+    .dist-word {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      color: #fff;
+      text-align: right;
+    }
+
+    .dist-bar-track {
+      background: rgba(255, 255, 255, 0.05);
+      height: 22px;
+      border-radius: 6px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .dist-bar-fill {
+      height: 100%;
+      border-radius: 6px;
+      background: linear-gradient(90deg, #6366f1 0%, #06b6d4 100%);
+      transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .dist-bar-fill.winner {
+      background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
+      box-shadow: 0 0 10px rgba(16, 185, 129, 0.5);
+    }
+
+    .dist-metrics {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+    }
+
+    .dist-prob {
+      color: #e2e8f0;
+      font-weight: 600;
+    }
+
+    .dist-logit {
+      color: var(--text-muted);
+    }
+
+    /* Pipeline Step Diagram */
+    .pipeline-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 16px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      padding-bottom: 12px;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .tab-btn.active {
+      background: rgba(99, 102, 241, 0.2);
+      color: #fff;
+    }
+
+    .code-viewer {
+      background: #050810;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 10px;
+      padding: 16px;
+      font-family: var(--font-mono);
+      font-size: 0.82rem;
+      color: #cbd5e1;
+      overflow-x: auto;
+      max-height: 480px;
+    }
+
+    .matrix-display {
+      display: grid;
+      gap: 6px;
+      font-family: var(--font-mono);
+      font-size: 0.78rem;
+      background: rgba(0, 0, 0, 0.3);
+      padding: 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+    }
+
+    .matrix-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .matrix-cell {
+      width: 58px;
+      padding: 4px 6px;
+      border-radius: 4px;
+      background: rgba(255, 255, 255, 0.04);
+      text-align: right;
+    }
+
+    .matrix-cell.highlight {
+      background: rgba(99, 102, 241, 0.3);
+      border: 1px solid var(--accent-glow);
+      color: #fff;
+      font-weight: 600;
+    }
+
+    .callout-box {
+      background: rgba(6, 182, 212, 0.1);
+      border-left: 4px solid var(--cyan);
+      padding: 12px 16px;
+      border-radius: 0 8px 8px 0;
+      margin-top: 16px;
+      font-size: 0.88rem;
+    }
+
+    .callout-box strong {
+      color: #fff;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <header>
+      <div class="badge-pill">Unit 1.1 Practical Laboratory</div>
+      <h1>Micro-LLM Architecture Simulator</h1>
+      <p class="subtitle">Experience how a decoder-only LLM physically generates text: Embedding vector lookup, LM Head Matrix Multiplication, Logits generation, Softmax scaling, and Autoregressive sampling.</p>
+    </header>
+
+    <div class="layout-grid">
+      
+      <!-- LEFT COLUMN: LIVE SIMULATOR -->
+      <section class="card">
+        <h2 class="card-title">
+          <span class="icon">⚡</span>
+          Autoregressive Generation Lab
+        </h2>
+
+        <div class="input-group">
+          <label>Select a Starter Prompt</label>
+          <div class="preset-buttons">
+            <button class="btn-preset" onclick="setPrompt('The sky')">"The sky"</button>
+            <button class="btn-preset" onclick="setPrompt('The sun')">"The sun"</button>
+            <button class="btn-preset" onclick="setPrompt('The ocean')">"The ocean"</button>
+            <button class="btn-preset" onclick="setPrompt('The night')">"The night"</button>
+            <button class="btn-preset" onclick="setPrompt('sun is')">"sun is"</button>
+          </div>
+          <div class="interactive-input">
+            <input type="text" id="promptInput" value="The sky" placeholder="Enter prompt from vocab...">
+            <button class="btn btn-secondary" id="resetBtn" onclick="resetSim()">Reset</button>
+          </div>
+        </div>
+
+        <div class="slider-row" style="margin-top: 16px;">
+          <div class="slider-container">
+            <label>
+              <span>Temperature ($T$)</span>
+              <span class="slider-val" id="tempVal">0.70</span>
+            </label>
+            <input type="range" id="tempSlider" min="0" max="2" step="0.05" value="0.7" oninput="updateTemperature(this.value)">
+            <span style="font-size: 0.72rem; color: var(--text-muted);">0.0 = Greedy (Argmax) | 1.0 = Normal | 2.0 = Flat/Chaotic</span>
+          </div>
+
+          <div class="slider-container">
+            <label>
+              <span>Max New Tokens</span>
+              <span class="slider-val" id="maxTokensVal">4</span>
+            </label>
+            <input type="range" id="maxTokensSlider" min="1" max="6" step="1" value="4" oninput="document.getElementById('maxTokensVal').innerText = this.value">
+            <span style="font-size: 0.72rem; color: var(--text-muted);">Steps before stopping</span>
+          </div>
+        </div>
+
+        <div class="action-row">
+          <button class="btn btn-primary" id="stepBtn" onclick="stepGeneration()">
+            <span>▶ Next Step</span>
+          </button>
+          <button class="btn btn-secondary" id="autoBtn" onclick="toggleAutoRun()">
+            <span>⏩ Auto Generate</span>
+          </button>
+        </div>
+
+        <!-- GENERATED STREAM -->
+        <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">Generated Sequence (Tokens in Context)</label>
+        <div class="stream-box" id="tokenStreamBox">
+          <!-- Chips injected via JS -->
+        </div>
+
+        <!-- CURRENT STEP DISTRIBUTION -->
+        <div style="display: flex; justify-content: space-between; align-items: baseline;">
+          <label style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase;">
+            Next-Token Vocabulary Distribution (Step <span id="currentStepNum">0</span>)
+          </label>
+          <span style="font-size: 0.78rem; color: var(--text-muted);">Math: <code style="color: var(--cyan);">Softmax(Logits / T)</code></span>
+        </div>
+
+        <div class="distribution-list" id="distributionList">
+          <!-- Populated by JS -->
+        </div>
+
+        <div class="callout-box" id="mechanicsNote">
+          <strong>Key Mechanical Insight:</strong> Look at the logits. Notice they are raw positive and negative numbers produced by multiplying your 4D hidden vector $h$ by the LM Head weights. Zero database queries occurred.
+        </div>
+      </section>
+
+      <!-- RIGHT COLUMN: CODE & MATRIX INSPECTOR -->
+      <section class="card">
+        <h2 class="card-title">
+          <span class="icon">🔍</span>
+          Internal Weight & Math Inspector
+        </h2>
+
+        <div class="pipeline-tabs">
+          <button class="tab-btn active" onclick="switchTab('weightsTab')">Pretrained Weights</button>
+          <button class="tab-btn" onclick="switchTab('codeTab')">Python Implementation</button>
+          <button class="tab-btn" onclick="switchTab('mathTab')">Equations Breakdown</button>
+        </div>
+
+        <!-- TAB 1: WEIGHTS -->
+        <div id="weightsTab">
+          <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 12px;">
+            Here are the exact weights used for this Micro-LLM ($D_{model}=4, V=12$). The LM Head transforms the 4 hidden values of the last token into 12 logits.
+          </p>
+
+          <label style="font-size: 0.8rem; font-weight: 700; color: var(--accent-glow);">LM Head Weights Matrix ($W_{\text{vocab}}$: $4 \times 12$)</label>
+          <div class="matrix-display" id="lmHeadMatrix">
+            <!-- Populated via JS -->
+          </div>
+
+          <label style="font-size: 0.8rem; font-weight: 700; color: var(--accent-glow); margin-top: 16px; display: block;">Embedding Table ($W_E$: $12 \times 4$)</label>
+          <div class="matrix-display" id="embeddingMatrix">
+            <!-- Populated via JS -->
+          </div>
+        </div>
+
+        <!-- TAB 2: CODE -->
+        <div id="codeTab" style="display: none;">
+          <pre class="code-viewer"><code># The exact core math powering every LLM:
+
+def matmul(vec, matrix):
+    """
+    1D Hidden State (D=4) @ 2D LM_Head (4 x V=12)
+    Returns: 12 unnormalized Logits
+    """
+    D = len(vec)
+    V = len(matrix[0])
+    logits = [0.0] * V
+    for v in range(V):
+        logits[v] = sum(vec[d] * matrix[d][v] for d in range(D))
+    return logits
+
+
+def softmax(logits, temperature=1.0):
+    """
+    Turns logits into probabilities that sum to 100%
+    """
+    if temperature &lt;= 0.0001:
+        # Greedy decoding (Argmax)
+        max_idx = logits.index(max(logits))
+        return [1.0 if i == max_idx else 0.0 for i in range(len(logits))]
+
+    # Exponentiate with temperature scaling
+    exp_scores = [math.exp(x / temperature) for x in logits]
+    total = sum(exp_scores)
+    return [score / total for score in exp_scores]</code></pre>
+        </div>
+
+        <!-- TAB 3: MATH -->
+        <div id="mathTab" style="display: none;">
+          <div style="font-size: 0.9rem; line-height: 1.6; color: #cbd5e1;">
+            <h3 style="color: #fff; margin-bottom: 8px;">1. The Linear Projection</h3>
+            <p>The Language Model Head is a single matrix multiplication without activation:</p>
+            <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 6px; font-family: var(--font-mono); margin: 6px 0 14px 0; color: var(--cyan);">
+              Logits = h × W_vocab
+            </div>
+            <p>Dimension: <code>[1 × 4] × [4 × 12] = [1 × 12]</code>.</p>
+
+            <h3 style="color: #fff; margin: 16px 0 8px 0;">2. Softmax Normalization</h3>
+            <p>Converts the real numbers $(-\infty, +\infty)$ into a valid probability simplex:</p>
+            <div style="background: rgba(0,0,0,0.4); padding: 8px 12px; border-radius: 6px; font-family: var(--font-mono); margin: 6px 0 14px 0; color: var(--cyan);">
+              P(token_i) = exp(logit_i / T) / Σ exp(logit_j / T)
+            </div>
+
+            <h3 style="color: #fff; margin: 16px 0 8px 0;">3. Sampling with Temperature</h3>
+            <ul style="padding-left: 20px; color: var(--text-muted);">
+              <li><strong>T → 0 (Greedy):</strong> Exponent goes to infinity; top logit gets 1.0 (100%).</li>
+              <li><strong>T = 1.0:</strong> True distribution learned from training corpus.</li>
+              <li><strong>T &gt; 1.0:</strong> Exponents are compressed closer together, increasing entropy (randomness).</li>
+            </ul>
+          </div>
+        </div>
+
+      </section>
+
+    </div>
+  </div>
+
+  <script>
+    // EXPANDED 12-WORD VOCABULARY
+    const VOCAB = [
+      "<PAD>", "The", "sky", "is", "blue", 
+      "ocean", "deep", "sun", "bright", "yellow", "night", "."
+    ];
+    const VOCAB_SIZE = VOCAB.length;
+    const D_MODEL = 4;
+
+    const word2id = {};
+    const id2word = {};
+    VOCAB.forEach((w, i) => {
+      word2id[w] = i;
+      id2word[i] = w;
+    });
+
+    // 12 x 4 EMBEDDING TABLE (Rich semantic clusters)
+    const EMBEDDING_TABLE = [
+      [ 0.0,  0.0,  0.0,  0.0],  // <PAD>
+      [ 1.5, -0.4,  0.8,  0.1],  // The
+      [ 0.1,  2.4, -1.2,  0.4],  // sky
+      [-0.8,  0.2,  2.1,  0.3],  // is
+      [ 0.5,  0.9, -0.4,  2.8],  // blue
+      [ 0.2,  2.2, -0.9,  1.9],  // ocean
+      [-0.4, -0.6,  2.4, -0.8],  // deep
+      [ 2.1, -1.2,  0.6, -0.5],  // sun
+      [ 1.8, -0.3, -0.8,  2.5],  // bright
+      [ 1.9,  0.1, -0.5,  2.2],  // yellow
+      [-1.8,  0.3, -1.5, -2.1],  // night
+      [ 0.0, -1.5,  0.0, -0.8]   // .
+    ];
+
+    // 4 x 12 LM HEAD WEIGHTS MATRIX
+    // Trained associations:
+    // "sky" -> "is"
+    // "is" -> "blue", "deep", "bright", "yellow"
+    // "sun" -> "is", "bright"
+    // "ocean" -> "is", "deep", "blue"
+    const LM_HEAD = [
+      // <PAD>  The   sky    is   blue  ocean  deep   sun bright yellow night    .
+      [ -3.0,  0.2,  1.8, -1.0,  0.3,  0.8, -1.2,  2.4,  1.5,  1.8, -0.4,  0.5],
+      [ -2.5, -0.4,  1.6,  3.2,  0.2,  1.5,  1.0, -1.1,  0.2, -0.1,  0.8, -1.0],
+      [ -4.0, -0.8, -0.6,  0.4,  3.4, -0.3,  3.2,  0.5, -0.4, -0.2, -1.5,  1.2],
+      [ -3.5,  0.1, -0.7, -0.5,  1.5,  2.1, -0.5, -0.8,  3.1,  2.8, -2.0,  4.2]
+    ];
+
+    // STATE
+    let currentTokens = [];
+    let currentStep = 0;
+    let autoInterval = null;
+    let temperature = 0.70;
+
+    function matmul(vec, matrix) {
+      const D = vec.length;
+      const V = matrix[0].length;
+      const logits = new Array(V).fill(0);
+      for (let v = 0; v < V; v++) {
+        let sum = 0;
+        for (let d = 0; d < D; d++) {
+          sum += vec[d] * matrix[d][v];
+        }
+        logits[v] = sum;
+      }
+      return logits;
+    }
+
+    function softmax(logits, temp) {
+      if (temp <= 0.0001) {
+        let maxVal = -Infinity;
+        let maxIdx = 0;
+        logits.forEach((l, i) => {
+          if (l > maxVal) { maxVal = l; maxIdx = i; }
+        });
+        return logits.map((_, i) => i === maxIdx ? 1.0 : 0.0);
+      }
+
+      const expScores = logits.map(x => Math.exp(x / temp));
+      const total = expScores.reduce((a, b) => a + b, 0);
+      return expScores.map(s => s / total);
+    }
+
+    function sampleToken(probs) {
+      const r = Math.random();
+      let cumulative = 0;
+      for (let i = 0; i < probs.length; i++) {
+        cumulative += probs[i];
+        if (r <= cumulative) return i;
+      }
+      return probs.length - 1;
+    }
+
+    function tokenize(text) {
+      const words = text.trim().split(/\s+/);
+      const ids = [];
+      for (let w of words) {
+        if (word2id[w] !== undefined) ids.push(word2id[w]);
+      }
+      return ids;
+    }
+
+    function renderTokenChips(latestWinningId = null) {
+      const box = document.getElementById("tokenStreamBox");
+      box.innerHTML = "";
+      const promptCount = tokenize(document.getElementById("promptInput").value).length;
+
+      currentTokens.forEach((tid, idx) => {
+        const chip = document.createElement("div");
+        const isPrompt = idx < promptCount;
+        const isLatest = idx === currentTokens.length - 1 && !isPrompt;
+
+        chip.className = `token-chip ${isPrompt ? 'prompt' : 'generated'} ${isLatest ? 'latest' : ''}`;
+        chip.innerHTML = `
+          <span>${id2word[tid]}</span>
+          <span class="token-id-tag">#${tid}</span>
+        `;
+        box.appendChild(chip);
+      });
+    }
+
+    function computeStep() {
+      if (currentTokens.length === 0) return null;
+      const lastTokenId = currentTokens[currentTokens.length - 1];
+      const h = EMBEDDING_TABLE[lastTokenId];
+      const logits = matmul(h, LM_HEAD);
+      const probs = softmax(logits, temperature);
+      return { logits, probs, lastTokenId, h };
+    }
+
+    function renderDistribution(stepData, winnerId = null) {
+      const list = document.getElementById("distributionList");
+      list.innerHTML = "";
+
+      if (!stepData) return;
+
+      // Sort display by probability descending
+      const items = VOCAB.map((word, id) => ({
+        id,
+        word,
+        logit: stepData.logits[id],
+        prob: stepData.probs[id]
+      })).sort((a, b) => b.prob - a.prob);
+
+      items.forEach(item => {
+        const row = document.createElement("div");
+        row.className = "dist-row";
+        const isWinner = winnerId === item.id;
+
+        row.innerHTML = `
+          <div class="dist-word" style="${isWinner ? 'color: var(--emerald);' : ''}">${item.word}</div>
+          <div class="dist-bar-track">
+            <div class="dist-bar-fill ${isWinner ? 'winner' : ''}" style="width: ${(item.prob * 100).toFixed(1)}%;"></div>
+          </div>
+          <div class="dist-metrics">
+            <span class="dist-prob">${(item.prob * 100).toFixed(1)}%</span>
+            <span class="dist-logit">${item.logit >= 0 ? '+' : ''}${item.logit.toFixed(2)}</span>
+          </div>
+        `;
+        list.appendChild(row);
+      });
+    }
+
+    function stepGeneration() {
+      const maxTokens = parseInt(document.getElementById("maxTokensSlider").value);
+      const promptTokens = tokenize(document.getElementById("promptInput").value);
+
+      if (currentTokens.length >= promptTokens.length + maxTokens) {
+        stopAutoRun();
+        return;
+      }
+
+      const stepData = computeStep();
+      if (!stepData) return;
+
+      const nextId = sampleToken(stepData.probs);
+      currentTokens.push(nextId);
+      currentStep++;
+
+      document.getElementById("currentStepNum").innerText = currentStep;
+      renderTokenChips(nextId);
+      renderDistribution(stepData, nextId);
+
+      // Stop on period
+      if (id2word[nextId] === ".") {
+        stopAutoRun();
+      }
+    }
+
+    function resetSim() {
+      stopAutoRun();
+      const promptText = document.getElementById("promptInput").value;
+      currentTokens = tokenize(promptText);
+      currentStep = 0;
+      document.getElementById("currentStepNum").innerText = "0";
+      renderTokenChips();
+      
+      const stepData = computeStep();
+      renderDistribution(stepData);
+    }
+
+    function setPrompt(text) {
+      document.getElementById("promptInput").value = text;
+      resetSim();
+    }
+
+    function updateTemperature(val) {
+      temperature = parseFloat(val);
+      document.getElementById("tempVal").innerText = temperature.toFixed(2);
+      const stepData = computeStep();
+      renderDistribution(stepData);
+    }
+
+    function toggleAutoRun() {
+      if (autoInterval) {
+        stopAutoRun();
+      } else {
+        document.getElementById("autoBtn").innerHTML = "<span>⏸ Pause</span>";
+        document.getElementById("autoBtn").classList.add("btn-primary");
+        autoInterval = setInterval(() => {
+          const maxTokens = parseInt(document.getElementById("maxTokensSlider").value);
+          const promptTokens = tokenize(document.getElementById("promptInput").value);
+          if (currentTokens.length >= promptTokens.length + maxTokens || id2word[currentTokens[currentTokens.length - 1]] === ".") {
+            stopAutoRun();
+          } else {
+            stepGeneration();
+          }
+        }, 800);
+      }
+    }
+
+    function stopAutoRun() {
+      if (autoInterval) {
+        clearInterval(autoInterval);
+        autoInterval = null;
+        document.getElementById("autoBtn").innerHTML = "<span>⏩ Auto Generate</span>";
+        document.getElementById("autoBtn").classList.remove("btn-primary");
+      }
+    }
+
+    function switchTab(tabId) {
+      document.querySelectorAll(".pipeline-tabs .tab-btn").forEach(btn => btn.classList.remove("active"));
+      event.target.classList.add("active");
+      
+      document.getElementById("weightsTab").style.display = "none";
+      document.getElementById("codeTab").style.display = "none";
+      document.getElementById("mathTab").style.display = "none";
+      
+      document.getElementById(tabId).style.display = "block";
+    }
+
+    function renderWeightMatrices() {
+      // LM Head
+      const lmBox = document.getElementById("lmHeadMatrix");
+      lmBox.innerHTML = "";
+      
+      // Header row
+      let header = '<div class="matrix-row"><span style="width: 50px;">dim</span>';
+      VOCAB.forEach(w => header += `<span class="matrix-cell" style="font-weight:700; color:var(--text);">${w}</span>`);
+      header += '</div>';
+      lmBox.innerHTML += header;
+
+      for (let d = 0; d < D_MODEL; d++) {
+        let row = `<div class="matrix-row"><span style="width: 50px; color:var(--text-muted);">d[${d}]</span>`;
+        for (let v = 0; v < VOCAB_SIZE; v++) {
+          const val = LM_HEAD[d][v];
+          row += `<span class="matrix-cell">${val.toFixed(1)}</span>`;
+        }
+        row += `</div>`;
+        lmBox.innerHTML += row;
+      }
+
+      // Embedding
+      const embBox = document.getElementById("embeddingMatrix");
+      embBox.innerHTML = "";
+      VOCAB.forEach((w, id) => {
+        let row = `<div class="matrix-row"><span style="width: 70px; color:var(--cyan); font-weight:600;">${w} (#${id})</span>`;
+        EMBEDDING_TABLE[id].forEach(val => {
+          row += `<span class="matrix-cell">${val.toFixed(1)}</span>`;
+        });
+        row += `</div>`;
+        embBox.innerHTML += row;
+      });
+    }
+
+    // INIT
+    window.addEventListener("DOMContentLoaded", () => {
+      renderWeightMatrices();
+      resetSim();
+    });
+  </script>
+</body>
+</html>

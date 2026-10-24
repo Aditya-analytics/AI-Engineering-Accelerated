@@ -24,3 +24,12 @@
 - Interview Q practiced + how I did: None (short session focused on architectural mental model).
 - Next: Complete 3-question warm-up (logits/softmax check, tool-calling distinction), then start Unit 1.2 (Tokens, Context and Latency).
 
+### 2026-10-24 · Day 6 · Module 1 Checkpoint & Mastery (planned: Day 6)
+- Covered: Micro-LLM simulation engine & interactive visualizer, BPE tokenization & non-English fragmentation benchmarking, hardware latency profiling (TTFT vs ITL, Prefill vs Decode, Prompt Caching), sampling dynamics (temperature vs Top-P), and execution boundaries (Tool Calling vs raw generation).
+- Did myself (hint level max): L1 (independently coded matrix multiplication and softmax, tested token benchmarking, analyzed visualizer).
+- Gate: Module 1 Checkpoint quiz: scored 4.85/5 · MASTERED · strong confidence and crisp answers.
+- Mistakes / misconceptions: Prior confusion on Softmax/logits vs cosine similarity and tool calling boundaries completely resolved with evidence.
+- Interview Q practiced + how I did: Defended 2M context window stuffing vs RAG on TTFT latency and cost grounds; articulated Tool Calling boundary for backend state mutation.
+- Next: Fetch Module 2 syllabus (Building with LLM APIs) and begin Unit 2.1 (API Client Architecture, Pydantic schemas, and error retries).
+
+
