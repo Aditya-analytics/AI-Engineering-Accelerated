@@ -1,0 +1,89 @@
+
+=== RECIPT #1 ===
+Nme: Rahul Sharma
+Dte: 14/03/2024
+Amnt: Rs. 1,245.00/-
+Catgory : Grocries
+Paid by Cash. Thnk You!!
+
+---
+
+BILL NO. 2
+custmr - priya mehta
+date -- march 3rd 24
+amt -> 3500
+categ: Electrnics
+*****KEEP THIS RECIPT SAFE****
+
+---
+
+    recipt
+  Name : Aakash Singh
+  date: 2024-1-22
+  Amount = 89.5 USD
+  Category= Resturant
+  (no returns aftr 3 days)
+
+---
+
+#4
+nm: Mrs. Sunita Rao
+Dt: 22nd Jan 2024
+AMT: ₹560
+cat : Helth & Medicne
+Note- take mediicne on time
+
+---
+
+RECIEPT 5
+  Name: Tom K.
+  Date : 05-07-24
+  Amount:    $2,899
+  catgory: Travl & Hotl
+Booking ID: TRV00291
+
+---
+
+~~ bill 6 ~~
+buyyer: Anjali Gupta
+dat: 9 feb 2024
+Rs 430.75
+categry = Utiliteis
+(electricty bill)
+
+---
+
+007 - SLIP
+Persn: Vikram Nair
+Date: 31/12/23
+Amnt paid: 12000
+cat: Educaton
+Cousre fee recieved ok
+
+---
+
+CASH MEMO
+8.
+  nm = Deepika Joshi
+  Dte: march/15/2024
+  Totl Amnt: $75.00
+  Ctgry: Clothng & Apprel
+  Sle item - no exhange
+
+---
+
+--- RECIEPT 9 ---
+Name;Manish Tiwari
+Date;2024.08.04
+Amount;Rs8500
+Category;Furnitre
+delivered by: ramu
+
+---
+
+[SLIP 10]
+Buyer Name : Neha Kapoor
+Prchse Date : Oct-02-2024
+Amt. : 999/-
+Catg : Subscriptn (OTT)
+Auto-renwal: Yes
